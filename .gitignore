@@ -1,0 +1,10 @@
+
+# Python virtual env
+.venv/
+
+# Local secrets
+.env
+
+# Python artifacts
+__pycache__/
+*.pyc

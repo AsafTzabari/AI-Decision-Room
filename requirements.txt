@@ -1,2 +1,7 @@
 litellm==1.82.6
 python-dotenv
+pydantic
+fastapi
+uvicorn
+pytest
+pytest-asyncio

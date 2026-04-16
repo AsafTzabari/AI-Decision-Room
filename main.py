@@ -1,49 +1,116 @@
-"""Terminal chat loop for a provider-agnostic LiteLLM CLI tool."""
+"""Entry point for the Decision Room — FastAPI server or CLI one-shot."""
 
 from __future__ import annotations
 
-from llm_client import LLMConfigurationError, generate_reply
+import asyncio
+import logging
+import sys
+
+from config import OrchestratorConfig
+from orchestrator.engine import SystemOrchestrator
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(levelname)-8s  %(name)s  %(message)s",
+)
 
 
-def run_chat() -> None:
-    print("\n=== LLM CLI Chat ===")
-    print("Type your message and press Enter.")
-    print("Type 'exit' or 'quit' to end the conversation.\n")
+# ---------------------------------------------------------------------------
+# CLI mode
+# ---------------------------------------------------------------------------
 
-    messages = []
+async def run_cli() -> None:
+    """Interactive single-prompt CLI that runs the full pipeline."""
+    print("\n=== Decision Room CLI ===")
+    print("Enter your question and the multi-agent pipeline will analyze it.\n")
 
-    while True:
-        try:
-            user_input = input("You: ").strip()
-        except (EOFError, KeyboardInterrupt):
-            print("\nExiting chat. Goodbye!")
-            break
+    try:
+        user_input = input("Your question: ").strip()
+    except (EOFError, KeyboardInterrupt):
+        print("\nExiting. Goodbye!")
+        return
 
-        if not user_input:
-            print("Please enter a message (or 'exit' to quit).")
-            continue
+    if not user_input:
+        print("No input provided. Exiting.")
+        return
 
-        if user_input.lower() in {"exit", "quit"}:
-            print("Exiting chat. Goodbye!")
-            break
+    orchestrator = SystemOrchestrator()
+    state = await orchestrator.run(user_input)
 
-        messages.append({"role": "user", "content": user_input})
+    print("\n" + "=" * 72)
+    print("RECRUITED AGENTS")
+    print("=" * 72)
+    for agent in state.agents:
+        print(f"  - {agent.role_title}")
 
-        try:
-            reply = generate_reply(messages)
-        except LLMConfigurationError as exc:
-            print(f"\n[Configuration Error] {exc}\n")
-            break
-        except Exception as exc:  # pragma: no cover - runtime/API failures
-            print(f"\n[Request Error] Could not reach provider: {exc}\n")
-            continue
+    print("\n" + "=" * 72)
+    print("DEBATE TRANSCRIPT")
+    print("=" * 72)
+    for msg in state.debate_transcript:
+        print(f"\n[Turn {msg.turn_number} — {msg.role_title}]")
+        print(msg.content)
 
-        if not reply.strip():
-            reply = "[No response text returned by provider.]"
+    print("\n" + "=" * 72)
+    print("EXPERT BRIEFS")
+    print("=" * 72)
+    for brief in state.expert_briefs:
+        print(f"\n--- {brief.role_title} ---")
+        print(brief.content)
 
-        messages.append({"role": "assistant", "content": reply})
-        print(f"\nAssistant:\n{reply}\n")
+    print("\n" + "=" * 72)
+    print("FINAL DECISION")
+    print("=" * 72)
+    print(state.final_decision)
+    print()
 
+
+# ---------------------------------------------------------------------------
+# FastAPI mode
+# ---------------------------------------------------------------------------
+
+def create_app():
+    """Build and return the FastAPI application."""
+    from fastapi import FastAPI
+    from pydantic import BaseModel
+
+    app = FastAPI(title="Decision Room", version="0.1.0")
+
+    class PromptRequest(BaseModel):
+        prompt: str
+
+    class DecisionResponse(BaseModel):
+        session_id: str
+        agents: list[dict]
+        final_decision: str
+
+    @app.post("/decide", response_model=DecisionResponse)
+    async def decide(req: PromptRequest):
+        orchestrator = SystemOrchestrator()
+        state = await orchestrator.run(req.prompt)
+        return DecisionResponse(
+            session_id=state.session_id,
+            agents=[
+                {"role_title": a.role_title, "agent_id": a.agent_id}
+                for a in state.agents
+            ],
+            final_decision=state.final_decision or "",
+        )
+
+    @app.get("/health")
+    async def health():
+        return {"status": "ok"}
+
+    return app
+
+
+# ---------------------------------------------------------------------------
+# Entrypoint
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    run_chat()
+    if "--server" in sys.argv:
+        import uvicorn
+
+        uvicorn.run(create_app(), host="0.0.0.0", port=8000)
+    else:
+        asyncio.run(run_cli())

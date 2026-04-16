@@ -8,3 +8,9 @@
 # Python artifacts
 __pycache__/
 *.pyc
+
+# Test/cache artifacts
+.pytest_cache/
+
+# Cursor-generated planning artifacts
+.cursor/plans/

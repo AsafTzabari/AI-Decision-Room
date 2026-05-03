@@ -55,7 +55,7 @@ async def _generate_brief(
         {"role": "user", "content": _BRIEF_INSTRUCTION},
     ]
 
-    content = await llm.complete(messages, tier=ModelTier.STANDARD)
+    content = await llm.complete_with_retry(messages, tier=ModelTier.STANDARD)
 
     return ExpertBrief(
         agent_id=agent_def.agent_id,

@@ -40,7 +40,7 @@ async def run_aggregation(
         )},
     ]
 
-    final = await llm.complete(messages, tier=ModelTier.STANDARD)
+    final = await llm.complete_with_retry(messages, tier=ModelTier.STANDARD)
     state.final_decision = final
     return state
 

@@ -11,6 +11,3 @@ __pycache__/
 
 # Test/cache artifacts
 .pytest_cache/
-
-# Cursor-generated planning artifacts
-.cursor/plans/

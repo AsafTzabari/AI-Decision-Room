@@ -1,6 +1,6 @@
 ---
-description: 
-alwaysApply: false
+description: "AI Decision Room: Python CLI for multi-turn LLM chat via LiteLLM"
+alwaysApply: true
 ---
 
 # AI Decision Room — Project Overview

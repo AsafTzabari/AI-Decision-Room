@@ -1,28 +1,3 @@
----
-description: 
-alwaysApply: false
----
-
----
-description: 
-alwaysApply: false
----
-
----
-description: 
-alwaysApply: false
----
-
----
-description: 
-alwaysApply: false
----
-
----
-description: 
-alwaysApply: true
----
-
 # AI Decision Room — Project Overview
 
 This repository is a **small Python CLI** that runs a **multi-turn chat in the terminal**. It sends your conversation to an LLM through **[LiteLLM](https://github.com/BerriAI/litellm)**, so you can swap providers and models using environment variables instead of changing code.

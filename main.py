@@ -6,6 +6,8 @@ import asyncio
 import logging
 import sys
 
+from pydantic import BaseModel
+
 from config import OrchestratorConfig
 from orchestrator.engine import SystemOrchestrator
 
@@ -68,20 +70,21 @@ async def run_cli() -> None:
 # FastAPI mode
 # ---------------------------------------------------------------------------
 
+class PromptRequest(BaseModel):
+    prompt: str
+
+
+class DecisionResponse(BaseModel):
+    session_id: str
+    agents: list[dict]
+    final_decision: str
+
+
 def create_app():
     """Build and return the FastAPI application."""
     from fastapi import FastAPI
-    from pydantic import BaseModel
 
     app = FastAPI(title="Decision Room", version="0.1.0")
-
-    class PromptRequest(BaseModel):
-        prompt: str
-
-    class DecisionResponse(BaseModel):
-        session_id: str
-        agents: list[dict]
-        final_decision: str
 
     @app.post("/decide", response_model=DecisionResponse)
     async def decide(req: PromptRequest):

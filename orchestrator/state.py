@@ -12,6 +12,8 @@ from agents.models import AgentDefinition, ExpertBrief
 
 
 class Phase(str, Enum):
+    """Identifies which stage of the pipeline a run is currently in."""
+
     RECRUITING = "recruiting"
     DEBATE = "debate"
     INDEPENDENT = "independent"

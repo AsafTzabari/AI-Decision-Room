@@ -1,3 +1,5 @@
+"""Pipeline phases: recruiter, chatroom, independent briefs, aggregator."""
+
 from .phase0_recruiter import recruit_agents
 from .phase1_chatroom import run_chatroom
 from .phase2_independent import run_independent_briefs

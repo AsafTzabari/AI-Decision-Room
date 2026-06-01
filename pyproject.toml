@@ -1,0 +1,7 @@
+[tool.interrogate]
+fail-under = 80
+exclude = ["tests"]
+ignore-magic = true
+ignore-module = false
+ignore-init-method = false
+verbose = 2

@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 class ModelTier(str, Enum):
+    """Selects which configured model handles a request."""
+
     FAST = "fast"
     STANDARD = "standard"
 
@@ -34,6 +36,7 @@ class LLMClient:
     """Async LLM client that routes requests to fast or standard models."""
 
     def __init__(self, config: OrchestratorConfig) -> None:
+        """Store config and map each tier to its configured model."""
         self._config = config
         self._models = {
             ModelTier.FAST: config.fast_model,

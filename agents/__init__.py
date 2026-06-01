@@ -1,3 +1,5 @@
+"""Agent identity models and cognitive-framework prompt building."""
+
 from .models import AgentDefinition, ExpertBrief
 from .cognitive_framework import build_system_prompt, COGNITIVE_FRAMEWORK_RULES
 

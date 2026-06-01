@@ -6,6 +6,8 @@ import asyncio
 import logging
 import sys
 
+from pydantic import BaseModel
+
 from config import OrchestratorConfig
 from orchestrator.engine import SystemOrchestrator
 
@@ -68,23 +70,29 @@ async def run_cli() -> None:
 # FastAPI mode
 # ---------------------------------------------------------------------------
 
+class PromptRequest(BaseModel):
+    """Request body carrying the user's question for /decide."""
+
+    prompt: str
+
+
+class DecisionResponse(BaseModel):
+    """Response body summarizing the pipeline outcome."""
+
+    session_id: str
+    agents: list[dict]
+    final_decision: str
+
+
 def create_app():
     """Build and return the FastAPI application."""
     from fastapi import FastAPI
-    from pydantic import BaseModel
 
     app = FastAPI(title="Decision Room", version="0.1.0")
 
-    class PromptRequest(BaseModel):
-        prompt: str
-
-    class DecisionResponse(BaseModel):
-        session_id: str
-        agents: list[dict]
-        final_decision: str
-
     @app.post("/decide", response_model=DecisionResponse)
     async def decide(req: PromptRequest):
+        """Run the full pipeline for the prompt and return the decision."""
         orchestrator = SystemOrchestrator()
         state = await orchestrator.run(req.prompt)
         return DecisionResponse(
@@ -98,6 +106,7 @@ def create_app():
 
     @app.get("/health")
     async def health():
+        """Liveness probe returning a simple status payload."""
         return {"status": "ok"}
 
     return app

@@ -19,10 +19,12 @@ class SystemOrchestrator:
     """Runs Phases 0 through 3 sequentially and returns the final state."""
 
     def __init__(self, config: OrchestratorConfig | None = None) -> None:
+        """Initialize with the given config (or load it from the env)."""
         self.config = config or OrchestratorConfig.from_env()
         self.llm = LLMClient(self.config)
 
     async def run(self, user_prompt: str) -> DecisionRoomState:
+        """Execute Phases 0-3 for the prompt and return the final state."""
         state = DecisionRoomState(
             user_prompt=user_prompt,
             max_debate_turns=self.config.max_debate_turns,

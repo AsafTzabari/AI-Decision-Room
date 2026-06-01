@@ -28,6 +28,7 @@ class OrchestratorConfig:
 
     @classmethod
     def from_env(cls) -> OrchestratorConfig:
+        """Build configuration from environment variables (and .env)."""
         api_key = os.getenv("PROVIDER_API_KEY", "")
         if not api_key:
             raise LLMConfigurationError(

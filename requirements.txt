@@ -5,3 +5,4 @@ fastapi
 uvicorn
 pytest
 pytest-asyncio
+interrogate

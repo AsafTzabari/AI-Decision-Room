@@ -71,10 +71,14 @@ async def run_cli() -> None:
 # ---------------------------------------------------------------------------
 
 class PromptRequest(BaseModel):
+    """Request body carrying the user's question for /decide."""
+
     prompt: str
 
 
 class DecisionResponse(BaseModel):
+    """Response body summarizing the pipeline outcome."""
+
     session_id: str
     agents: list[dict]
     final_decision: str
@@ -88,6 +92,7 @@ def create_app():
 
     @app.post("/decide", response_model=DecisionResponse)
     async def decide(req: PromptRequest):
+        """Run the full pipeline for the prompt and return the decision."""
         orchestrator = SystemOrchestrator()
         state = await orchestrator.run(req.prompt)
         return DecisionResponse(
@@ -101,6 +106,7 @@ def create_app():
 
     @app.get("/health")
     async def health():
+        """Liveness probe returning a simple status payload."""
         return {"status": "ok"}
 
     return app

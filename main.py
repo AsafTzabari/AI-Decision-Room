@@ -85,14 +85,31 @@ class DecisionResponse(BaseModel):
 
 
 def create_app():
-    """Build and return the FastAPI application."""
+    """
+    Create and configure the FastAPI application serving the Decision Room HTTP API.
+    
+    The returned app exposes:
+    - POST /decide: accepts a `PromptRequest` JSON body, runs the decision pipeline, and returns a `DecisionResponse`.
+    - GET /health: liveness endpoint that returns `{"status": "ok"}`.
+    
+    Returns:
+        FastAPI: A configured FastAPI application instance.
+    """
     from fastapi import FastAPI
 
     app = FastAPI(title="Decision Room", version="0.1.0")
 
     @app.post("/decide", response_model=DecisionResponse)
     async def decide(req: PromptRequest):
-        """Run the full pipeline for the prompt and return the decision."""
+        """
+        Run the decision pipeline for a prompt and produce a structured decision response.
+        
+        Parameters:
+            req (PromptRequest): Request containing the user prompt to evaluate.
+        
+        Returns:
+            DecisionResponse: Object containing `session_id`, `agents` (list of dicts with `role_title` and `agent_id`), and `final_decision` (empty string if no decision was produced).
+        """
         orchestrator = SystemOrchestrator()
         state = await orchestrator.run(req.prompt)
         return DecisionResponse(

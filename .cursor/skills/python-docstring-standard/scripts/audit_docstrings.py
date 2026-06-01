@@ -21,12 +21,26 @@ DEFAULT_EXCLUDE = {"tests", ".git", ".venv", "venv", "__pycache__", "build", "di
 
 
 def is_magic(name: str) -> bool:
-    """Return True for dunder methods like __init__ or __repr__."""
+    """
+    Determine whether a name is a Python double-underscore (dunder) identifier.
+    
+    Returns:
+        `True` if `name` starts with `__` and ends with `__`, `False` otherwise.
+    """
     return name.startswith("__") and name.endswith("__")
 
 
 def iter_py_files(paths: list[str], exclude: set[str]) -> list[Path]:
-    """Yield .py files under the given paths, skipping excluded directories."""
+    """
+    Collect Python source files from the given file or directory paths, skipping any files whose path contains an element from `exclude`.
+    
+    Parameters:
+        paths (list[str]): File or directory paths to scan; file paths are included directly, directory paths are searched recursively.
+        exclude (set[str]): Path components to exclude (any file with a path part in this set is skipped).
+    
+    Returns:
+        list[Path]: Sorted, deduplicated list of `Path` objects pointing to files with a `.py` suffix.
+    """
     files: list[Path] = []
     for raw in paths:
         root = Path(raw)
@@ -41,7 +55,14 @@ def iter_py_files(paths: list[str], exclude: set[str]) -> list[Path]:
 
 
 def audit_file(path: Path) -> list[tuple[str, bool]]:
-    """Return (name, has_docstring) for each documentable node in a file."""
+    """
+    Collect docstring presence for the module and every class/function/async function defined in the file.
+    
+    For the module the entry is recorded as "<path> (module)". For classes and functions the entry is recorded as "<path>:<lineno> <qualname>", where `qualname` reflects nesting (e.g., "OuterClass.inner_func"). Dunder/magic function names are ignored; classes are recorded regardless of name. Each tuple's boolean is `True` if that node has a docstring, `False` otherwise.
+    
+    Returns:
+        list[tuple[str, bool]]: A list of (name, has_docstring) tuples describing each audited node.
+    """
     source = path.read_text(encoding="utf-8")
     tree = ast.parse(source, filename=str(path))
     results: list[tuple[str, bool]] = [
@@ -49,7 +70,15 @@ def audit_file(path: Path) -> list[tuple[str, bool]]:
     ]
 
     def visit(node: ast.AST, prefix: str) -> None:
-        """Recursively record nested classes, functions, and methods."""
+        """
+        Traverse the AST starting at `node` and record docstring presence for nested classes and functions.
+        
+        Appends to the module-level `results` list one entry per encountered `ClassDef`, `FunctionDef`, or `AsyncFunctionDef` in the form (`"{path}:{lineno} {qualname}"`, `has_docstring`).
+        
+        Parameters:
+            node (ast.AST): AST node to traverse.
+            prefix (str): Qualified-name prefix to apply to discovered members (e.g., "" or "OuterClass.").
+        """
         for child in ast.iter_child_nodes(node):
             if isinstance(
                 child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
@@ -65,7 +94,14 @@ def audit_file(path: Path) -> list[tuple[str, bool]]:
 
 
 def main() -> int:
-    """Run the audit and print missing docstrings plus a coverage summary."""
+    """
+    Audit Python files for docstring coverage and report missing docstrings and a coverage summary.
+    
+    Parses command-line arguments for target paths and the `--fail-under` threshold, discovers and audits `.py` files, prints each missed docstring entry and a coverage summary line.
+    
+    Returns:
+        int: 0 when coverage meets or exceeds the configured threshold, 1 when coverage is below the threshold.
+    """
     parser = argparse.ArgumentParser(description="Audit Python docstring coverage.")
     parser.add_argument("paths", nargs="*", default=["."], help="Files or dirs.")
     parser.add_argument("--fail-under", type=float, default=80.0)

@@ -13,6 +13,14 @@ from orchestrator.state import DecisionRoomState
 
 @pytest.fixture
 def client() -> TestClient:
+    """
+    Create and return a TestClient instance for the FastAPI application.
+    
+    Instantiates a fresh application via create_app() and exposes a TestClient configured for exercising the app in tests (intended for use as a pytest fixture).
+    
+    Returns:
+        TestClient: A TestClient bound to a newly created app instance.
+    """
     return TestClient(create_app())
 
 
@@ -30,6 +38,11 @@ def test_openapi_and_docs_available(client: TestClient) -> None:
 
 
 def test_decide_happy_path_contract(client: TestClient, sample_agents) -> None:
+    """
+    Verifies that POST /decide returns the expected JSON when the orchestration produces a populated DecisionRoomState.
+    
+    Patches `main.SystemOrchestrator` so its `run` coroutine returns a prepared `DecisionRoomState`, sends a request to `/decide`, and asserts the response contains the state's `session_id`, `final_decision`, and a serialized `agents` list. Also asserts the orchestrator's `run` was awaited exactly once with the provided prompt.
+    """
     state = DecisionRoomState(
         user_prompt="Should we ship this release?",
         session_id="session-test-123",

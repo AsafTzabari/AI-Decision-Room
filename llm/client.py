@@ -25,7 +25,12 @@ class LLMClient:
     """Async LLM client that routes requests to fast or standard models."""
 
     def __init__(self, config: OrchestratorConfig) -> None:
-        """Store config and map each tier to its configured model."""
+        """
+        Initialize the client with the given orchestration configuration and build the mapping from ModelTier to model name.
+        
+        Parameters:
+            config (OrchestratorConfig): Orchestrator configuration that supplies `fast_model` and `standard_model` (and provider settings) and is retained for request construction.
+        """
         self._config = config
         self._models = {
             ModelTier.FAST: config.fast_model,

@@ -19,12 +19,25 @@ class SystemOrchestrator:
     """Runs Phases 0 through 3 sequentially and returns the final state."""
 
     def __init__(self, config: OrchestratorConfig | None = None) -> None:
-        """Initialize with the given config (or load it from the env)."""
+        """
+        Create a SystemOrchestrator configured for orchestration; load configuration from the environment if none is provided.
+        
+        Parameters:
+            config (OrchestratorConfig | None): Optional orchestrator configuration. If `None`, configuration is loaded via `OrchestratorConfig.from_env()`.
+        """
         self.config = config or OrchestratorConfig.from_env()
         self.llm = LLMClient(self.config)
 
     async def run(self, user_prompt: str) -> DecisionRoomState:
-        """Execute Phases 0-3 for the prompt and return the final state."""
+        """
+        Run the full orchestration pipeline (recruit agents, run debate, collect briefs, and aggregate) for a user prompt.
+        
+        Parameters:
+            user_prompt (str): The user's prompt or question to be processed by the pipeline.
+        
+        Returns:
+            DecisionRoomState: Final decision room state after all phases have completed; `current_phase` will be set to `Phase.COMPLETE`.
+        """
         state = DecisionRoomState(
             user_prompt=user_prompt,
             max_debate_turns=self.config.max_debate_turns,

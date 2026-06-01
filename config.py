@@ -28,7 +28,17 @@ class OrchestratorConfig:
 
     @classmethod
     def from_env(cls) -> OrchestratorConfig:
-        """Build configuration from environment variables (and .env)."""
+        """
+        Create an OrchestratorConfig populated from environment variables.
+        
+        Reads the following environment variables (and uses defaults when not set): PROVIDER_API_KEY (required), LLM_MODEL_FAST (default "openai/gpt-4o-mini"), LLM_MODEL_STANDARD (default "openai/gpt-4o"), LLM_API_BASE (empty string is treated as None), and MAX_DEBATE_TURNS (default "3", converted to int). Constructs and returns an OrchestratorConfig using these values.
+        
+        Returns:
+            OrchestratorConfig: Configuration instance built from the environment.
+        
+        Raises:
+            LLMConfigurationError: If PROVIDER_API_KEY is missing or empty.
+        """
         api_key = os.getenv("PROVIDER_API_KEY", "")
         if not api_key:
             raise LLMConfigurationError(

@@ -1,0 +1,60 @@
+---
+description: "AI Decision Room: Python CLI for multi-turn LLM chat via LiteLLM"
+alwaysApply: true
+---
+
+# AI Decision Room — Project Overview
+
+This repository is a **small Python CLI** that runs a **multi-turn chat in the terminal**. It sends your conversation to an LLM through **[LiteLLM](https://github.com/BerriAI/litellm)**, so you can swap providers and models using environment variables instead of changing code.
+
+---
+
+## How it works (end to end)
+
+1. You run `main.py`. It starts an interactive loop and prints short usage hints.
+2. Each line you type (except empty lines) is appended to a `messages` list as a `user` message.
+3. `generate_reply(messages)` in `llm_client.py` loads `.env`, builds a LiteLLM `completion()` call, and returns the assistant's text.
+4. That reply is printed and appended to `messages` as an `assistant` message, so the **full thread** is sent on the next turn.
+5. Typing `exit` or `quit`, or pressing Ctrl+C / EOF, ends the session.
+
+Configuration problems surface as `[Configuration Error] …` and stop the loop. Network or API failures print `[Request Error] …` and the loop continues so you can try again.
+
+---
+
+## File roles
+
+| File               | Role                                                                                                                                  |
+| --- | ---- |
+| `main.py`          | Terminal UI: input loop, message history, calls `generate_reply`, handles exit and errors.                                            |
+| `llm_client.py`    | Loads env vars with `python-dotenv`, validates required keys, calls `litellm.completion`, returns the first choice's message content. |
+| `requirements.txt` | Runtime deps: `litellm`, `python-dotenv`.                                                                                             |
+| `.env.example`     | Template for `PROVIDER_API_KEY`, `LLM_MODEL`, optional `LLM_API_BASE`. Copy to `.env` and fill in real values.                       |
+
+---
+
+## Configuration
+
+Create a `.env` file in the project root (see `.env.example`):
+
+- `PROVIDER_API_KEY` (required) — API key for the provider LiteLLM will use (depends on `LLM_MODEL`).
+- `LLM_MODEL` (required) — LiteLLM model id, e.g. `openai/gpt-4o-mini` or `anthropic/claude-3-5-sonnet-20241022`.
+- `LLM_API_BASE` (optional) — Custom API base URL for OpenAI-compatible gateways or self-hosted endpoints.
+
+---
+
+## Run locally
+
+```bash
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env        # then edit .env
+python main.py
+```
+
+---
+
+## Dependencies
+
+- **LiteLLM** — Unified `completion()` API across many providers; model string selects routing behavior.
+- **python-dotenv** — Loads `.env` into `os.environ` for keys and model name.

@@ -1,8 +1,6 @@
-# AI Decision Room — project overview
+# AI Decision Room — Project Overview
 
 This repository is a **small Python CLI** that runs a **multi-turn chat in the terminal**. It sends your conversation to an LLM through **[LiteLLM](https://github.com/BerriAI/litellm)**, so you can swap providers and models using environment variables instead of changing code.
-
-The GitHub description mentions a broader “decision room” concept; the **current codebase** is that chat loop plus a thin LLM wrapper.
 
 ---
 
@@ -10,7 +8,7 @@ The GitHub description mentions a broader “decision room” concept; the **cur
 
 1. You run `main.py`. It starts an interactive loop and prints short usage hints.
 2. Each line you type (except empty lines) is appended to a `messages` list as a `user` message.
-3. `generate_reply(messages)` in `llm_client.py` loads `.env`, builds a LiteLLM `completion()` call, and returns the assistant’s text.
+3. `generate_reply(messages)` in `llm_client.py` loads `.env`, builds a LiteLLM `completion()` call, and returns the assistant's text.
 4. That reply is printed and appended to `messages` as an `assistant` message, so the **full thread** is sent on the next turn.
 5. Typing `exit` or `quit`, or pressing Ctrl+C / EOF, ends the session.
 
@@ -20,14 +18,12 @@ Configuration problems surface as `[Configuration Error] …` and stop the loop.
 
 ## File roles
 
-
 | File               | Role                                                                                                                                  |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `main.py`          | Terminal UI: input loop, message history, calls `generate_reply`, handles exit and errors.                                            |
-| `llm_client.py`    | Loads env vars with `python-dotenv`, validates required keys, calls `litellm.completion`, returns the first choice’s message content. |
+| `llm_client.py`    | Loads env vars with `python-dotenv`, validates required keys, calls `litellm.completion`, returns the first choice's message content. |
 | `requirements.txt` | Runtime deps: `litellm`, `python-dotenv`.                                                                                             |
-| `.env.example`     | Template for `PROVIDER_API_KEY`, `LLM_MODEL`, optional `LLM_API_BASE`. Copy to `.env` and fill in real values.                        |
-
+| `.env.example`     | Template for `PROVIDER_API_KEY`, `LLM_MODEL`, optional `LLM_API_BASE`. Copy to `.env` and fill in real values.                       |
 
 ---
 
@@ -35,11 +31,9 @@ Configuration problems surface as `[Configuration Error] …` and stop the loop.
 
 Create a `.env` file in the project root (see `.env.example`):
 
-- `**PROVIDER_API_KEY`** (required) — API key for the provider LiteLLM will use (depends on `LLM_MODEL`).
-- `**LLM_MODEL**` (required) — LiteLLM model id, e.g. `openai/gpt-4o-mini` or `anthropic/claude-3-5-sonnet-20241022`.
-- `**LLM_API_BASE**` (optional) — Custom API base URL for OpenAI-compatible gateways or self-hosted endpoints.
-
-`llm_client.py` calls `load_dotenv()` on each `generate_reply`, so edits to `.env` are picked up without restarting **only** if your editor/process behavior allows; typically you run the script once per session.
+- `PROVIDER_API_KEY` (required) — API key for the provider LiteLLM will use (depends on `LLM_MODEL`).
+- `LLM_MODEL` (required) — LiteLLM model id, e.g. `openai/gpt-4o-mini` or `anthropic/claude-3-5-sonnet-20241022`.
+- `LLM_API_BASE` (optional) — Custom API base URL for OpenAI-compatible gateways or self-hosted endpoints.
 
 ---
 
@@ -55,13 +49,7 @@ python main.py
 
 ---
 
-## Dependencies (conceptual)
+## Dependencies
 
 - **LiteLLM** — Unified `completion()` API across many providers; model string selects routing behavior.
 - **python-dotenv** — Loads `.env` into `os.environ` for keys and model name.
-
----
-
-## Extension ideas (not in repo today)
-
-A “decision room” layer could add multiple agent roles, structured debates, or JSON outputs on top of this same `generate_reply` / message-history pattern; the current project stops at a single assistant in one thread.

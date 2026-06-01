@@ -26,7 +26,7 @@ def is_magic(name: str) -> bool:
 
 
 def iter_py_files(paths: list[str], exclude: set[str]) -> list[Path]:
-    """Yield .py files under the given paths, skipping excluded directories."""
+    """Return list[Path] of .py files under given paths, skipping excluded directories."""
     files: list[Path] = []
     for raw in paths:
         root = Path(raw)
